@@ -24,7 +24,6 @@ HEADERS = {
                   "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"
 }
 
-# 본문이 들어있을 가능성이 높은 후보 선택자들 (사이트 구조가 바뀔 수 있어 여러 개를 시도)
 CONTENT_SELECTORS = [
     "div.article_cont",
     "div#article_cont",
@@ -36,7 +35,6 @@ CONTENT_SELECTORS = [
 
 
 def load_processed():
-    """이미 처리한 글 목록(guid/link 집합)을 불러온다."""
     if not os.path.exists(PROCESSED_PATH):
         return set()
     with open(PROCESSED_PATH, "r", encoding="utf-8") as f:
@@ -54,7 +52,6 @@ def save_processed(processed_set):
 
 
 def fetch_article_body(url: str) -> str:
-    """원문 URL에 접속해 본문 텍스트를 최대한 추출한다. 실패하면 빈 문자열 반환."""
     try:
         res = requests.get(url, headers=HEADERS, timeout=10)
         res.raise_for_status()
@@ -67,21 +64,30 @@ def fetch_article_body(url: str) -> str:
         node = soup.select_one(selector)
         if node:
             text = node.get_text(separator="\n", strip=True)
-            if len(text) > 100:  # 너무 짧으면 본문이 아닐 가능성이 높음
+            if len(text) > 100:
                 return text
 
-    # 후보 선택자로 못 찾으면 전체 텍스트에서 대략 추출 (최후 수단)
     body = soup.find("body")
     return body.get_text(separator="\n", strip=True) if body else ""
 
 
 def collect_new_releases(max_items: int = 5):
-    """
-    RSS를 읽어 아직 처리하지 않은 보도자료 목록을 반환한다.
-    반환 형식: [{title, link, published, agency, body}, ...]
-    """
     processed = load_processed()
-    feed = feedparser.parse(RSS_URL)
+
+    try:
+        rss_res = requests.get(RSS_URL, headers=HEADERS, timeout=10)
+        rss_res.raise_for_status()
+        feed = feedparser.parse(rss_res.content)
+        print(f"[진단] RSS HTTP 상태코드: {rss_res.status_code}")
+    except requests.RequestException as e:
+        print(f"[진단] RSS 요청 자체가 실패했습니다: {e}")
+        return [], processed
+
+    print(f"[진단] feed.bozo(파싱 오류 여부): {feed.bozo}")
+    if feed.bozo:
+        print(f"[진단] 파싱 오류 내용: {feed.get('bozo_exception')}")
+    print(f"[진단] RSS에서 읽은 전체 항목 수: {len(feed.entries)}")
+    print(f"[진단] 이미 처리된 것으로 기록된 항목 수: {len(processed)}")
 
     new_items = []
     for entry in feed.entries:
@@ -91,12 +97,10 @@ def collect_new_releases(max_items: int = 5):
 
         title = entry.get("title", "").strip()
         published = entry.get("published", "")
-        # RSS 항목에 부처명이 포함된 카테고리/저자 필드가 있는 경우가 있어 시도해본다
         agency = entry.get("author", "") or entry.get("category", "") or ""
 
         body = fetch_article_body(link)
         if not body:
-            # 본문을 못 가져왔으면 RSS 요약(summary)이라도 사용
             body = BeautifulSoup(entry.get("summary", ""), "html.parser").get_text(strip=True)
 
         new_items.append({
@@ -107,7 +111,7 @@ def collect_new_releases(max_items: int = 5):
             "body": body,
         })
 
-        time.sleep(1)  # 원문 서버에 과도한 요청을 피하기 위한 딜레이
+        time.sleep(1)
 
         if len(new_items) >= max_items:
             break
