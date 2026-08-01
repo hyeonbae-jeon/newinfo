@@ -16,7 +16,7 @@ import os
 from google import genai
 from google.genai import types
 
-MODEL_NAME = "gemini-2.5-flash-lite" 
+MODEL_NAME = "gemini-flash-latest"
 
 SYSTEM_PROMPT = """\
 # 역할(Role)
