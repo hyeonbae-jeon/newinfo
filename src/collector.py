@@ -5,18 +5,25 @@ Collector (Google News 기반)
 공공데이터포털 점검 등으로 Open API를 못 쓸 때 쓰는 대체 수집기입니다.
 구글 뉴스에서 korea.kr(정책브리핑) 도메인의 최신 글을 검색해서
 원문 링크로 들어가 본문을 크롤링합니다.
+
+주의:
+- 구글 뉴스 RSS는 공식 지원 API가 아니라 검색 결과를 RSS로 보여주는 방식이라
+  가끔 형식이 바뀔 수 있습니다.
+- 링크가 구글 리다이렉트 주소로 오는 경우가 많아서, 실제 원문 주소로
+  한번 더 따라가는 과정이 필요합니다 (resolve_final_url).
 """
 
 import json
 import os
-import re
 import time
 from urllib.parse import quote
 
 import feedparser
 import requests
 from bs4 import BeautifulSoup
+from googlenewsdecoder import new_decoderv1
 
+# korea.kr 도메인으로 제한해서 구글 뉴스에서 검색
 SEARCH_QUERY = "site:korea.kr 보도자료"
 GOOGLE_NEWS_RSS_URL = (
     f"https://news.google.com/rss/search?q={quote(SEARCH_QUERY)}&hl=ko&gl=KR&ceid=KR:ko"
@@ -57,24 +64,15 @@ def save_processed(processed_set):
 
 
 def resolve_final_url(google_link: str) -> str:
-    """구글 뉴스 리다이렉트 링크를 실제 원문 주소로 변환."""
+    """구글 뉴스의 암호화된 리다이렉트 링크를 실제 원문 주소로 디코딩."""
     try:
-        res = requests.get(google_link, headers=HEADERS, timeout=10, allow_redirects=True)
-    except requests.RequestException:
-        return google_link
-
-    final_url = res.url
-
-    if "google.com" in final_url:
-        match = re.search(
-            r'<meta[^>]*http-equiv=["\']refresh["\'][^>]*content=["\'][^;]*;\s*url=([^"\']+)',
-            res.text,
-            re.IGNORECASE,
-        )
-        if match:
-            final_url = match.group(1)
-
-    return final_url
+        result = new_decoderv1(google_link, interval=1)
+        if result.get("status") and result.get("decoded_url"):
+            return result["decoded_url"]
+        print(f"[진단] 디코딩 실패 응답: {result}")
+    except Exception as e:
+        print(f"[진단] 링크 디코딩 중 오류: {e}")
+    return google_link  # 실패하면 원래 링크라도 사용
 
 
 def fetch_article_body(url: str) -> str:
@@ -99,6 +97,11 @@ def fetch_article_body(url: str) -> str:
 
 
 def collect_new_releases(max_items: int = 5):
+    """
+    구글 뉴스 검색 RSS에서 korea.kr 관련 글을 찾아,
+    아직 처리하지 않은 것만 반환.
+    반환 형식: [{title, link, published, agency, body}, ...]
+    """
     processed = load_processed()
 
     try:
@@ -134,6 +137,7 @@ def collect_new_releases(max_items: int = 5):
             skipped_already_processed += 1
             continue
 
+        # korea.kr 도메인이 아니면 건너뜀 (검색 필터가 완벽하지 않을 수 있어서)
         if "korea.kr" not in real_url:
             skipped_not_korea_kr += 1
             continue
