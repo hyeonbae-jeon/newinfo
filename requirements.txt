@@ -1,6 +1,6 @@
 feedparser==6.0.11
-requests==2.32.3
 beautifulsoup4==4.12.3
+requests==2.32.3
 google-genai==1.15.0
 markdown==3.7
 google-auth==2.35.0
