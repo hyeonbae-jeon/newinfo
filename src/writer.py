@@ -16,7 +16,7 @@ import os
 from google import genai
 from google.genai import types
 
-MODEL_NAME = "gemini-2.5-flash"  # 요청 한도를 더 아끼고 싶으면 "gemini-2.5-flash-lite"로 교체
+MODEL_NAME = "gemini-2.5-flash-lite" 
 
 SYSTEM_PROMPT = """\
 # 역할(Role)
