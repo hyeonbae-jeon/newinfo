@@ -4,7 +4,12 @@ on:
   schedule:
     # 매일 한국시간(KST) 오전 9시 = UTC 0시. 필요시 시간 조정 가능.
     - cron: "0 0 * * *"
-  workflow_dispatch: {}  # 수동 실행 버튼도 사용 가능하게 함 (테스트용)
+  workflow_dispatch:
+    inputs:
+      max_items:
+        description: "이번 실행에서 처리할 최대 건수 (1~10)"
+        required: false
+        default: "5"
 
 permissions:
   contents: write  # processed.json 변경사항을 저장소에 커밋하기 위함
@@ -26,6 +31,7 @@ jobs:
 
       - name: 파이프라인 실행
         env:
+          MAX_ITEMS_PER_RUN: ${{ github.event.inputs.max_items || '5' }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
