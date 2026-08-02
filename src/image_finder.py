@@ -15,6 +15,17 @@ import requests
 PEXELS_SEARCH_URL = "https://api.pexels.com/v1/search"
 
 
+KOREA_HINT_KEYWORDS = ["korea", "korean", "seoul", "한국", "서울"]
+
+
+def _ensure_korea_context(query: str) -> str:
+    """검색어에 한국 관련 키워드가 없으면 'South Korea'를 덧붙여 보정."""
+    query_lower = query.lower()
+    if any(kw in query_lower for kw in KOREA_HINT_KEYWORDS):
+        return query
+    return f"{query}, South Korea"
+
+
 def search_photo(query: str, orientation: str = "landscape"):
     """
     query로 사진을 검색해 1장을 반환.
@@ -25,8 +36,11 @@ def search_photo(query: str, orientation: str = "landscape"):
         print("[진단] PEXELS_API_KEY가 설정되어 있지 않아 이미지 삽입을 건너뜁니다.")
         return None
 
+    query = _ensure_korea_context(query)
+    print(f"[진단] Pexels 검색어: {query}")
+
     headers = {"Authorization": api_key}
-    params = {"query": query, "per_page": 1, "orientation": orientation}
+    params = {"query": query, "per_page": 1, "orientation": orientation, "locale": "ko-KR"}
 
     try:
         res = requests.get(PEXELS_SEARCH_URL, headers=headers, params=params, timeout=10)
@@ -37,6 +51,21 @@ def search_photo(query: str, orientation: str = "landscape"):
         return None
 
     photos = data.get("photos", [])
+
+    # 한국 맥락을 붙였더니 결과가 없으면, 원래 검색어로 한 번 더 시도 (완전히 못 찾는 것보단 나음)
+    if not photos:
+        fallback_query = query.replace(", South Korea", "")
+        if fallback_query != query:
+            print(f"[진단] 한국 맥락 검색 결과 없음, 폴백 검색어로 재시도: {fallback_query}")
+            params["query"] = fallback_query
+            try:
+                res = requests.get(PEXELS_SEARCH_URL, headers=headers, params=params, timeout=10)
+                res.raise_for_status()
+                data = res.json()
+                photos = data.get("photos", [])
+            except requests.RequestException as e:
+                print(f"[진단] Pexels 폴백 요청 실패: {e}")
+
     if not photos:
         print(f"[진단] Pexels에서 '{query}' 검색 결과 없음")
         return None

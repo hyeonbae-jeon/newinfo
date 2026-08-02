@@ -46,6 +46,16 @@ SYSTEM_PROMPT = """\
 9. 추측은 작성하지 않습니다.
 10. 내용이 부족하면 추측하지 말고 생략합니다.
 ---
+# 이미지 프롬프트 작성 규칙 (매우 중요)
+thumbnail_prompt와 image_prompts는 스톡사진 검색에 사용됩니다. 검색 결과가
+미국/서구 중심 이미지로 쏠리지 않도록, 아래 규칙을 반드시 지키십시오.
+- 모든 프롬프트에 "South Korea", "Korean", "Seoul" 중 최소 하나를 반드시 포함하십시오.
+- 인물이 등장하는 장면은 "Korean people" 또는 "Asian people"로 명시하십시오.
+- 정부/도시 배경은 실제 한국 느낌이 나도록 "Korean government building", "Seoul city",
+  "Korean apartment complex" 처럼 구체적으로 작성하십시오.
+- 예시: "Korean government officials in a press briefing, Seoul, South Korea"
+  (X) "government officials in a press briefing" (한국 맥락 없음)
+---
 # 출력 규칙 (매우 중요)
 반드시 아래 JSON 스키마 하나만 출력하십시오. 앞뒤에 어떤 설명, 인사말, 코드블록 표시(```)도 붙이지 마십시오.
 {
