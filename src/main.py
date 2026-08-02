@@ -22,7 +22,14 @@ from publisher import publish_post
 PUBLISH_AS_DRAFT = True
 
 # 한 번 실행에 처리할 최대 보도자료 건수 (API 비용/부하 조절용)
-MAX_ITEMS_PER_RUN = 3
+# GitHub Actions에서 workflow_dispatch 실행 시 입력한 값을 사용, 없으면 기본 5건.
+# 안전을 위해 최대 10건으로 상한을 둡니다.
+_raw_max_items = os.environ.get("MAX_ITEMS_PER_RUN", "5")
+try:
+    MAX_ITEMS_PER_RUN = max(1, min(10, int(_raw_max_items)))
+except ValueError:
+    MAX_ITEMS_PER_RUN = 5
+print(f"[진단] 이번 실행 최대 처리 건수: {MAX_ITEMS_PER_RUN}")
 
 
 def main():

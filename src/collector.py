@@ -23,11 +23,19 @@ import requests
 from bs4 import BeautifulSoup
 from googlenewsdecoder import new_decoderv1
 
-# korea.kr 도메인으로 제한해서 구글 뉴스에서 검색
-SEARCH_QUERY = "site:korea.kr 보도자료"
-GOOGLE_NEWS_RSS_URL = (
-    f"https://news.google.com/rss/search?q={quote(SEARCH_QUERY)}&hl=ko&gl=KR&ceid=KR:ko"
-)
+# korea.kr 도메인으로 제한해서 구글 뉴스에서 검색.
+# "보도자료" 하나에만 의존하면 딱딱한 발표성 글만 모이니, 사람들이 관심 가질만한
+# 키워드도 섞어서 검색 결과를 다양화한다.
+SEARCH_QUERIES = [
+    "site:korea.kr 보도자료",
+    "site:korea.kr 지원금",
+    "site:korea.kr 정책",
+    "site:korea.kr 생활",
+]
+
+
+def _build_rss_url(query: str) -> str:
+    return f"https://news.google.com/rss/search?q={quote(query)}&hl=ko&gl=KR&ceid=KR:ko"
 
 PROCESSED_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "processed.json")
 
@@ -98,30 +106,43 @@ def fetch_article_body(url: str) -> str:
 
 def collect_new_releases(max_items: int = 5):
     """
-    구글 뉴스 검색 RSS에서 korea.kr 관련 글을 찾아,
+    여러 키워드로 구글 뉴스 검색 RSS를 조회해 korea.kr 관련 글을 찾고,
     아직 처리하지 않은 것만 반환.
     반환 형식: [{title, link, published, agency, body}, ...]
     """
     processed = load_processed()
 
-    try:
-        rss_res = requests.get(GOOGLE_NEWS_RSS_URL, headers=HEADERS, timeout=15)
-        rss_res.raise_for_status()
-        feed = feedparser.parse(rss_res.content)
-        print(f"[진단] 구글뉴스 RSS 상태코드: {rss_res.status_code}")
-    except requests.RequestException as e:
-        print(f"[진단] 구글뉴스 RSS 요청 실패: {e}")
-        return [], processed
+    # 여러 검색어의 결과를 하나로 합치되, 구글 링크 기준으로 중복 제거
+    all_entries = []
+    seen_google_links = set()
 
-    print(f"[진단] feed.bozo: {feed.bozo}")
-    print(f"[진단] 검색된 전체 항목 수: {len(feed.entries)}")
+    for query in SEARCH_QUERIES:
+        rss_url = _build_rss_url(query)
+        try:
+            rss_res = requests.get(rss_url, headers=HEADERS, timeout=15)
+            rss_res.raise_for_status()
+            feed = feedparser.parse(rss_res.content)
+            print(f"[진단] 검색어 '{query}' 상태코드: {rss_res.status_code}, 항목 수: {len(feed.entries)}")
+        except requests.RequestException as e:
+            print(f"[진단] 검색어 '{query}' 요청 실패: {e}")
+            continue
+
+        for entry in feed.entries:
+            google_link = entry.get("link", "")
+            if google_link and google_link not in seen_google_links:
+                seen_google_links.add(google_link)
+                all_entries.append(entry)
+
+        time.sleep(1)  # 구글 요청 사이 짧은 딜레이
+
+    print(f"[진단] 검색어 {len(SEARCH_QUERIES)}개 합산, 중복 제거 후 전체 항목 수: {len(all_entries)}")
 
     new_items = []
     skipped_already_processed = 0
     skipped_not_korea_kr = 0
     sample_shown = 0
 
-    for entry in feed.entries:
+    for entry in all_entries:
         google_link = entry.get("link", "")
         if not google_link:
             continue
