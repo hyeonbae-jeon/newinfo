@@ -20,13 +20,14 @@ publisher.py   : Blogger API로 초안(draft) 등록
 processed.json : 처리 완료 글 기록 (중복 방지) → 저장소에 자동 커밋
 ```
 
-## 준비물 (6가지 Secret)
+## 준비물 (7가지 Secret)
 
-GitHub 저장소 **Settings > Secrets and variables > Actions > New repository secret**에서 아래 6개를 등록해야 합니다.
+GitHub 저장소 **Settings > Secrets and variables > Actions > New repository secret**에서 아래 7개를 등록해야 합니다.
 
 | Secret 이름 | 설명 | 발급 방법 |
 |---|---|---|
 | `DATA_GO_KR_SERVICE_KEY` | 보도자료 수집용 공공데이터포털 인증키 | 아래 "공공데이터포털 API 신청" 참고 |
+| `PEXELS_API_KEY` | 본문 이미지 자동 삽입용 Pexels 키 | 아래 "Pexels API 신청" 참고 |
 | `GEMINI_API_KEY` | Gemini API 키 (무료 티어) | [Google AI Studio](https://aistudio.google.com/apikey)에서 발급 |
 | `GOOGLE_CLIENT_ID` | Google OAuth 클라이언트 ID | 아래 "Blogger 연동 준비" 참고 |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth 클라이언트 보안 비밀 | 위와 동일 |
@@ -35,7 +36,9 @@ GitHub 저장소 **Settings > Secrets and variables > Actions > New repository s
 
 > **Gemini API 키 발급**: [Google AI Studio](https://aistudio.google.com/apikey)에 접속해 Google 계정으로 로그인 후 "Create API key" 버튼만 누르면 바로 발급됩니다. 별도 결제 등록 없이 무료 티어로 바로 사용 가능합니다.
 >
-> **무료 티어 주의사항**: 무료 티어는 분당/일일 요청 수 제한이 있고, Pro 계열 모델은 유료 전용입니다(2026년 기준 Flash·Flash-Lite 계열만 무료). 이 프로젝트는 기본적으로 `gemini-2.5-flash`를 사용하며, 한도가 자주 걸린다면 `src/writer.py`의 `MODEL_NAME`을 `gemini-2.5-flash-lite`로 바꾸고 `main.py`의 `MAX_ITEMS_PER_RUN`을 줄이세요. 정확한 최신 한도는 [ai.google.dev](https://ai.google.dev)에서 확인하는 걸 추천드립니다.
+> **Pexels API 신청**: [pexels.com/api](https://www.pexels.com/api/) 접속 → 가입 → "Your API Key" 페이지에서 즉시 키 발급 (무료, 시간당 200회 / 월 2만 회). 등록 안 해도 글 발행은 정상 작동하고 이미지만 안 붙습니다.
+>
+> **무료 티어 주의사항**: Gemini는 모델 세대교체가 잦아서 특정 버전명(`gemini-2.5-flash` 등)이 어느 순간 막히는 경우가 흔합니다. 그래서 이 프로젝트는 특정 버전을 고정하지 않고, 항상 최신 Flash 모델을 자동으로 가리키는 **별칭(alias)**인 `gemini-flash-latest`를 사용합니다. 그래도 오류가 나면 [ai.google.dev/gemini-api/docs/models](https://ai.google.dev/gemini-api/docs/models)에서 현재 사용 가능한 모델명/별칭을 확인 후 `src/writer.py`의 `MODEL_NAME`을 교체하세요.
 
 ## 0. 공공데이터포털 API 신청 (최초 1회)
 
