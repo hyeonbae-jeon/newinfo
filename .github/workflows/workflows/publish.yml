@@ -1,0 +1,44 @@
+name: Auto Blog Publish
+
+on:
+  schedule:
+    # 매일 한국시간(KST) 오전 9시 = UTC 0시. 필요시 시간 조정 가능.
+    - cron: "0 0 * * *"
+  workflow_dispatch: {}  # 수동 실행 버튼도 사용 가능하게 함 (테스트용)
+
+permissions:
+  contents: write  # processed.json 변경사항을 저장소에 커밋하기 위함
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 저장소 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Python 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 의존성 설치
+        run: pip install -r requirements.txt
+
+      - name: 파이프라인 실행
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          BLOGGER_BLOG_ID: ${{ secrets.BLOGGER_BLOG_ID }}
+        run: python src/main.py
+
+      - name: 처리 기록(processed.json) 커밋
+        run: |
+          git config user.name "gov-policy-bot"
+          git config user.email "actions@github.com"
+          git add data/processed.json
+          git diff --cached --quiet && echo "변경사항 없음" || git commit -m "chore: update processed list [skip ci]"
+          git push
