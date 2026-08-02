@@ -16,7 +16,7 @@ import os
 from google import genai
 from google.genai import types
 
-MODEL_NAME = "gemini-flash-latest"
+MODEL_NAME = "gemini-flash-latest"  # 특정 버전을 고정하지 않고 항상 최신 Flash 모델을 가리키는 별칭 (세대교체로 인한 404 방지)
 
 SYSTEM_PROMPT = """\
 # 역할(Role)
@@ -69,8 +69,13 @@ def build_user_message(item: dict) -> str:
 - 제목: {item.get('title', '')}
 - 작성기관: {item.get('agency', '') or '확인 필요 (본문 참고)'}
 - 작성일: {item.get('published', '')}
+- 원문 URL: {item.get('link', '')}
 - 본문:
 {item.get('body', '')}
+
+# 출처 표기 지침
+blog_markdown 맨 마지막 줄에 반드시 아래 형식으로 원문 출처를 표기하십시오.
+> 출처: 대한민국 정책브리핑 ({item.get('link', '')})
 """
 
 
