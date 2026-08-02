@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 """
-Collector (Google News 기반)
-----------------------------
-공공데이터포털 점검 등으로 Open API를 못 쓸 때 쓰는 대체 수집기입니다.
-구글 뉴스에서 korea.kr(정책브리핑) 도메인의 최신 글을 검색해서
-원문 링크로 들어가 본문을 크롤링합니다.
+Collector (Google News 기반 - 일반 트렌딩 이슈)
+------------------------------------------------
+정부/공공기관 발표가 아니라, 사람들이 관심 가질만한 일반 트렌딩 이슈
+(연예/사회/화제)를 구글 뉴스에서 수집합니다. 특정 도메인으로 제한하지 않고
+구글 뉴스 전체 헤드라인 + 화제성 키워드 검색을 함께 사용합니다.
 
 주의:
-- 구글 뉴스 RSS는 공식 지원 API가 아니라 검색 결과를 RSS로 보여주는 방식이라
-  가끔 형식이 바뀔 수 있습니다.
-- 링크가 구글 리다이렉트 주소로 오는 경우가 많아서, 실제 원문 주소로
-  한번 더 따라가는 과정이 필요합니다 (resolve_final_url).
+- 구글 뉴스 RSS는 공식 지원 API가 아니라 검색/피드 결과를 RSS로 보여주는
+  방식이라 가끔 형식이 바뀔 수 있습니다.
+- 링크가 구글의 암호화된 리다이렉트 주소로 오기 때문에, googlenewsdecoder로
+  실제 원문 주소를 디코딩합니다.
+- 다양한 언론사 사이트를 대상으로 하므로, 본문 크롤링은 여러 선택자를
+  시도하고 실패하면 <p> 태그 전체를 모으는 범용 방식으로 폴백합니다.
 """
 
 import json
@@ -23,14 +25,16 @@ import requests
 from bs4 import BeautifulSoup
 from googlenewsdecoder import new_decoderv1
 
-# korea.kr 도메인으로 제한해서 구글 뉴스에서 검색.
-# "보도자료" 하나에만 의존하면 딱딱한 발표성 글만 모이니, 사람들이 관심 가질만한
-# 키워드도 섞어서 검색 결과를 다양화한다.
+# 사람들이 관심 가질만한 일반 트렌딩 이슈(연예/사회/화제) 위주로 수집.
+# 1) 구글 뉴스 '전체 헤드라인' 피드 (도메인 제한 없음, 실시간 화제성 이슈 위주)
+# 2) 화제/이슈 키워드로 보완 검색
+TOP_HEADLINES_URL = "https://news.google.com/rss?hl=ko&gl=KR&ceid=KR:ko"
+
 SEARCH_QUERIES = [
-    "site:korea.kr 보도자료",
-    "site:korea.kr 지원금",
-    "site:korea.kr 정책",
-    "site:korea.kr 생활",
+    "화제",
+    "이슈",
+    "논란",
+    "화제의 인물",
 ]
 
 
@@ -49,6 +53,13 @@ CONTENT_SELECTORS = [
     "div#article_cont",
     "div.view_con",
     "div.cont_area",
+    "div#articleBody",           # 네이버 뉴스 등
+    "div#article-view-content-div",  # 네이버 뉴스
+    "div.article_view",
+    "div.news_end",
+    "div#articeBody",
+    "div.article-body",
+    "div.art_txt",
     "div#content",
     "article",
 ]
@@ -100,6 +111,14 @@ def fetch_article_body(url: str) -> str:
             if len(text) > 100:
                 return text
 
+    # 특정 선택자로 못 찾으면, 사이트 구조에 상관없이 <p> 태그를 전부 모아서 시도
+    # (완벽하진 않지만 대부분의 뉴스 사이트에서 본문 문단은 <p>로 되어있는 경우가 많음)
+    paragraphs = soup.find_all("p")
+    if paragraphs:
+        text = "\n".join(p.get_text(strip=True) for p in paragraphs if len(p.get_text(strip=True)) > 20)
+        if len(text) > 100:
+            return text
+
     body = soup.find("body")
     return body.get_text(separator="\n", strip=True) if body else ""
 
@@ -116,15 +135,18 @@ def collect_new_releases(max_items: int = 5):
     all_entries = []
     seen_google_links = set()
 
-    for query in SEARCH_QUERIES:
-        rss_url = _build_rss_url(query)
+    # 1) 전체 헤드라인(화제성 이슈) 피드
+    rss_urls = [("전체 헤드라인", TOP_HEADLINES_URL)]
+    rss_urls += [(query, _build_rss_url(query)) for query in SEARCH_QUERIES]
+
+    for label, rss_url in rss_urls:
         try:
             rss_res = requests.get(rss_url, headers=HEADERS, timeout=15)
             rss_res.raise_for_status()
             feed = feedparser.parse(rss_res.content)
-            print(f"[진단] 검색어 '{query}' 상태코드: {rss_res.status_code}, 항목 수: {len(feed.entries)}")
+            print(f"[진단] '{label}' 상태코드: {rss_res.status_code}, 항목 수: {len(feed.entries)}")
         except requests.RequestException as e:
-            print(f"[진단] 검색어 '{query}' 요청 실패: {e}")
+            print(f"[진단] '{label}' 요청 실패: {e}")
             continue
 
         for entry in feed.entries:
@@ -135,11 +157,10 @@ def collect_new_releases(max_items: int = 5):
 
         time.sleep(1)  # 구글 요청 사이 짧은 딜레이
 
-    print(f"[진단] 검색어 {len(SEARCH_QUERIES)}개 합산, 중복 제거 후 전체 항목 수: {len(all_entries)}")
+    print(f"[진단] 검색 {len(rss_urls)}개 합산, 중복 제거 후 전체 항목 수: {len(all_entries)}")
 
     new_items = []
     skipped_already_processed = 0
-    skipped_not_korea_kr = 0
     sample_shown = 0
 
     for entry in all_entries:
@@ -158,9 +179,9 @@ def collect_new_releases(max_items: int = 5):
             skipped_already_processed += 1
             continue
 
-        # korea.kr 도메인이 아니면 건너뜀 (검색 필터가 완벽하지 않을 수 있어서)
-        if "korea.kr" not in real_url:
-            skipped_not_korea_kr += 1
+        # 구글 리다이렉트가 아예 안 풀린 경우(여전히 google.com)만 건너뜀.
+        # 이제 특정 도메인(korea.kr)으로 제한하지 않음 — 일반 트렌딩 이슈이므로.
+        if "google.com" in real_url:
             continue
 
         title = entry.get("title", "").strip()
@@ -187,7 +208,6 @@ def collect_new_releases(max_items: int = 5):
             break
 
     print(f"[진단] 이미 처리됨으로 건너뜀: {skipped_already_processed}건")
-    print(f"[진단] korea.kr 도메인이 아니어서 건너뜀: {skipped_not_korea_kr}건")
     print(f"[진단] 필터링 후 신규 항목 수: {len(new_items)}")
     return new_items, processed
 
