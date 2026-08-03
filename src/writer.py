@@ -16,7 +16,15 @@ import os
 from google import genai
 from google.genai import types
 
-MODEL_NAME = "gemini-flash-latest"  # 특정 버전을 고정하지 않고 항상 최신 Flash 모델을 가리키는 별칭 (세대교체로 인한 404 방지)
+MODEL_NAME = "gemini-flash-latest"  # 기본 모델. 세대교체로 인한 404 방지를 위해 특정 버전 대신 별칭 사용
+
+# 기본 모델의 무료 한도가 다 찼을 때(429 Too Many Requests / RESOURCE_EXHAUSTED)
+# 순서대로 시도할 대체 모델. 같은 Flash 계열이라 품질 차이가 크지 않고,
+# 모델별로 무료 할당량이 별도로 관리되어 페널티 없이 넘어갈 수 있습니다.
+MODEL_FALLBACK_CHAIN = [
+    MODEL_NAME,
+    "gemini-flash-lite-latest",
+]
 
 SYSTEM_PROMPT = """\
 # 역할(Role)
@@ -98,10 +106,18 @@ blog_markdown 맨 마지막 줄에 반드시 아래 형식으로 원문 출처�
 """
 
 
+def _is_quota_error(exc: Exception) -> bool:
+    """한도 초과(429/RESOURCE_EXHAUSTED)로 인한 오류인지 판별."""
+    msg = str(exc)
+    return "429" in msg or "RESOURCE_EXHAUSTED" in msg or "quota" in msg.lower()
+
+
 def generate_blog_post(item: dict) -> dict:
     """
     하나의 보도자료(item)에 대해 Gemini API를 호출하고,
     파싱된 JSON dict를 반환한다. 실패 시 None 반환.
+    기본 모델의 무료 한도가 다 찬 경우, MODEL_FALLBACK_CHAIN의 다음 모델로
+    자동 재시도한다.
     """
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
@@ -109,15 +125,30 @@ def generate_blog_post(item: dict) -> dict:
 
     client = genai.Client(api_key=api_key)
 
-    response = client.models.generate_content(
-        model=MODEL_NAME,
-        contents=build_user_message(item),
-        config=types.GenerateContentConfig(
-            system_instruction=SYSTEM_PROMPT,
-            response_mime_type="application/json",  # JSON 형식으로만 응답하도록 강제
-            temperature=0.7,
-        ),
-    )
+    last_error = None
+    for model_name in MODEL_FALLBACK_CHAIN:
+        try:
+            response = client.models.generate_content(
+                model=model_name,
+                contents=build_user_message(item),
+                config=types.GenerateContentConfig(
+                    system_instruction=SYSTEM_PROMPT,
+                    response_mime_type="application/json",  # JSON 형식으로만 응답하도록 강제
+                    temperature=0.7,
+                ),
+            )
+            if model_name != MODEL_FALLBACK_CHAIN[0]:
+                print(f"[진단] 기본 모델 한도 초과로 대체 모델 사용: {model_name}")
+            break  # 성공하면 반복 종료
+        except Exception as e:
+            last_error = e
+            if _is_quota_error(e):
+                print(f"[진단] '{model_name}' 한도 초과, 다음 모델로 재시도합니다: {e}")
+                continue
+            raise  # 한도 문제가 아닌 다른 오류는 그대로 올려서 main.py에서 처리
+    else:
+        # 체인의 모든 모델이 한도 초과인 경우
+        raise last_error
 
     raw_text = (response.text or "").strip()
 
