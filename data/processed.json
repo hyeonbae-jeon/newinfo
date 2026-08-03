@@ -1,41 +1,145 @@
 {
-  "processed": [
-    "https://imnews.imbc.com/news/2026/society/article/6841966_36918.html",
-    "https://www.chosun.com/politics/assembly/2026/08/03/SVXOS7JEXBGTDHCLFM2HPU3HXM/",
-    "https://www.donga.com/news/People/article/all/20260803/134409314/2",
-    "https://www.hani.co.kr/arti/society/environment/1271100.html",
-    "https://www.hankyung.com/article/2026080202757",
-    "https://www.hankyung.com/article/2026080304997",
-    "https://www.headlinejeju.co.kr/news/articleView.html?idxno=596920",
-    "https://www.korea.kr/",
-    "https://www.korea.kr/archive/recruitInfoView.do?dataId=390734",
-    "https://www.korea.kr/briefing/actuallyView.do?newsId=148968961",
-    "https://www.korea.kr/briefing/policyBriefingView.do?newsId=156772259",
-    "https://www.korea.kr/briefing/policyBriefingView.do?newsId=156773049&pWise=sub&pWiseSub=C1",
-    "https://www.korea.kr/briefing/policyBriefingView.do?newsId=156773049&pWise=sub&pWiseSub=C2",
-    "https://www.korea.kr/briefing/presidentView.do?newsId=148968964",
-    "https://www.korea.kr/briefing/presidentView.do?newsId=148968965",
-    "https://www.korea.kr/briefing/presidentView.do?newsId=148968996",
-    "https://www.korea.kr/briefing/presidentView.do?newsId=148969113",
-    "https://www.korea.kr/briefing/presidentView.do?newsId=148969114",
-    "https://www.korea.kr/briefing/presidentView.do?newsId=148969186&pWise=sub&pWiseSub=C3",
-    "https://www.korea.kr/briefing/presidentView.do?newsId=148969194",
-    "https://www.korea.kr/briefing/presidentView.do?newsId=148969206",
-    "https://www.korea.kr/briefing/presidentView.do?newsId=148969207",
-    "https://www.korea.kr/briefing/presidentView.do?newsId=148969207&pWise=sub&pWiseSub=C2",
-    "https://www.korea.kr/briefing/speechView.do?newsId=132038971&pWise=sub&pWiseSub=C3",
-    "https://www.korea.kr/multi/mediaNewsView.do?newsId=148969034",
-    "https://www.korea.kr/multi/mediaNewsView.do?newsId=148969036",
-    "https://www.korea.kr/multi/mediaNewsView.do?newsId=148969043",
-    "https://www.korea.kr/multi/mediaNewsView.do?newsId=148969064&pWise=sub&pWiseSub=R2",
-    "https://www.korea.kr/multi/mediaNewsView.do?newsId=148969094",
-    "https://www.korea.kr/multi/mediaNewsView.do?newsId=148969126&pWise=sub&pWiseSub=R5",
-    "https://www.korea.kr/multi/mediaNewsView.do?newsId=148969146&pWise=main&pWiseMain=L2",
-    "https://www.korea.kr/multi/mediaNewsView.do?newsId=148969191",
-    "https://www.korea.kr/multi/policyPhotoView.do?bbsKey=72792&pWise=sub&pWiseSub=D4",
-    "https://www.korea.kr/multi/policyPhotoView.do?bbsKey=72794",
-    "https://www.korea.kr/multi/policyPhotoView.do?bbsKey=72798",
-    "https://www.korea.kr/news/policyNewsView.do?newsId=148968956&pWise=main&pWiseMain=A4",
-    "https://www.yna.co.kr/view/AKR20260802043400064"
-  ]
+  "processed": {
+    "https://imnews.imbc.com/news/2026/society/article/6841966_36918.html": {
+      "post_id": null
+    },
+    "https://www.chosun.com/politics/assembly/2026/08/03/SVXOS7JEXBGTDHCLFM2HPU3HXM/": {
+      "post_id": null
+    },
+    "https://www.donga.com/news/People/article/all/20260803/134409314/2": {
+      "post_id": null
+    },
+    "https://www.hani.co.kr/arti/society/environment/1271100.html": {
+      "post_id": null
+    },
+    "https://www.hankyung.com/article/2026080202757": {
+      "post_id": null
+    },
+    "https://www.hankyung.com/article/2026080304997": {
+      "post_id": null
+    },
+    "https://www.headlinejeju.co.kr/news/articleView.html?idxno=596920": {
+      "post_id": null
+    },
+    "https://www.korea.kr/": {
+      "post_id": null
+    },
+    "https://www.korea.kr/archive/recruitInfoView.do?dataId=390734": {
+      "post_id": null
+    },
+    "https://www.korea.kr/briefing/actuallyView.do?newsId=148968961": {
+      "post_id": null
+    },
+    "https://www.korea.kr/briefing/policyBriefingView.do?newsId=156772259": {
+      "post_id": null
+    },
+    "https://www.korea.kr/briefing/policyBriefingView.do?newsId=156773049&pWise=sub&pWiseSub=C1": {
+      "post_id": null
+    },
+    "https://www.korea.kr/briefing/policyBriefingView.do?newsId=156773049&pWise=sub&pWiseSub=C2": {
+      "post_id": null
+    },
+    "https://www.korea.kr/briefing/presidentView.do?newsId=148968964": {
+      "post_id": null
+    },
+    "https://www.korea.kr/briefing/presidentView.do?newsId=148968965": {
+      "post_id": null
+    },
+    "https://www.korea.kr/briefing/presidentView.do?newsId=148968996": {
+      "post_id": null
+    },
+    "https://www.korea.kr/briefing/presidentView.do?newsId=148969113": {
+      "post_id": null
+    },
+    "https://www.korea.kr/briefing/presidentView.do?newsId=148969114": {
+      "post_id": null
+    },
+    "https://www.korea.kr/briefing/presidentView.do?newsId=148969186&pWise=sub&pWiseSub=C3": {
+      "post_id": null
+    },
+    "https://www.korea.kr/briefing/presidentView.do?newsId=148969194": {
+      "post_id": null
+    },
+    "https://www.korea.kr/briefing/presidentView.do?newsId=148969206": {
+      "post_id": null
+    },
+    "https://www.korea.kr/briefing/presidentView.do?newsId=148969207": {
+      "post_id": null
+    },
+    "https://www.korea.kr/briefing/presidentView.do?newsId=148969207&pWise=sub&pWiseSub=C2": {
+      "post_id": null
+    },
+    "https://www.korea.kr/briefing/speechView.do?newsId=132038971&pWise=sub&pWiseSub=C3": {
+      "post_id": null
+    },
+    "https://www.korea.kr/multi/mediaNewsView.do?newsId=148969034": {
+      "post_id": null
+    },
+    "https://www.korea.kr/multi/mediaNewsView.do?newsId=148969036": {
+      "post_id": null
+    },
+    "https://www.korea.kr/multi/mediaNewsView.do?newsId=148969043": {
+      "post_id": null
+    },
+    "https://www.korea.kr/multi/mediaNewsView.do?newsId=148969064&pWise=sub&pWiseSub=R2": {
+      "post_id": null
+    },
+    "https://www.korea.kr/multi/mediaNewsView.do?newsId=148969094": {
+      "post_id": null
+    },
+    "https://www.korea.kr/multi/mediaNewsView.do?newsId=148969126&pWise=sub&pWiseSub=R5": {
+      "post_id": null
+    },
+    "https://www.korea.kr/multi/mediaNewsView.do?newsId=148969146&pWise=main&pWiseMain=L2": {
+      "post_id": null
+    },
+    "https://www.korea.kr/multi/mediaNewsView.do?newsId=148969191": {
+      "post_id": null
+    },
+    "https://www.korea.kr/multi/policyPhotoView.do?bbsKey=72792&pWise=sub&pWiseSub=D4": {
+      "post_id": null
+    },
+    "https://www.korea.kr/multi/policyPhotoView.do?bbsKey=72794": {
+      "post_id": null
+    },
+    "https://www.korea.kr/multi/policyPhotoView.do?bbsKey=72798": {
+      "post_id": null
+    },
+    "https://www.korea.kr/news/policyNewsView.do?newsId=148968956&pWise=main&pWiseMain=A4": {
+      "post_id": null
+    },
+    "https://www.yna.co.kr/view/AKR20260802043400064": {
+      "post_id": null
+    },
+    "https://www.hani.co.kr/arti/science/science_general/1271166.html": {
+      "post_id": "3387335827389294422",
+      "title": "수도권 첫 폭염중대경보! 서쪽으로 확산된 극한 폭염과 향후 날씨 전망",
+      "published": "Mon, 03 Aug 2026 10:50:00 GMT",
+      "updated_at": "2026-08-03T12:40:30.194479"
+    },
+    "https://www.yna.co.kr/view/AKR20260803073151001": {
+      "post_id": "4626823821416023992",
+      "title": "민주당 전당대회 0.99%p 차 박빙! 정청래·김민석 격돌 및 발언 논란 정리",
+      "published": "Mon, 03 Aug 2026 08:50:37 GMT",
+      "updated_at": "2026-08-03T12:40:41.828262"
+    },
+    "https://www.hani.co.kr/arti/politics/politics_general/1271171.html": {
+      "post_id": "3464587097586740695",
+      "title": "검찰 보완수사권 폐지 형사소송법 개정안, 여야 정면충돌... 거부권 촉구 vs 여론전 맞불",
+      "published": "Mon, 03 Aug 2026 08:18:00 GMT",
+      "updated_at": "2026-08-03T12:40:53.268502"
+    },
+    "https://imnews.imbc.com/news/2026/politics/article/6842063_36911.html": {
+      "post_id": "7076665782199477629",
+      "title": "미군 무인기를 적 기체로 오인? 격추 직전까지 갔던 '소통 오류' 전말",
+      "published": "Mon, 03 Aug 2026 07:45:20 GMT",
+      "updated_at": "2026-08-03T12:41:14.869321"
+    },
+    "https://imnews.imbc.com/news/2026/politics/article/6842062_36911.html": {
+      "post_id": "2648211297061559109",
+      "title": "지방선거 투표자 수 오입력 논란, 선관위의 '분산 입력' 지침과 전말은?",
+      "published": "Mon, 03 Aug 2026 07:23:49 GMT",
+      "updated_at": "2026-08-03T12:41:27.084054"
+    }
+  }
 }
