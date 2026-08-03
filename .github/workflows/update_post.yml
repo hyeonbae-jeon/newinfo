@@ -1,0 +1,45 @@
+name: Update Existing Post
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: "업데이트할 글의 원문 URL (data/processed.json에 있는 그 URL)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-post:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 저장소 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Python 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 의존성 설치
+        run: pip install -r requirements.txt
+
+      - name: 게시물 업데이트 실행
+        env:
+          TARGET_URL: ${{ github.event.inputs.target_url }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          BLOGGER_BLOG_ID: ${{ secrets.BLOGGER_BLOG_ID }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+        run: python src/refresh_post.py
+
+      - name: 처리 기록(processed.json) 커밋
+        run: |
+          git config user.name "gov-policy-bot"
+          git config user.email "actions@github.com"
+          git add data/processed.json
+          git diff --cached --quiet && echo "변경사항 없음" || git commit -m "chore: update post refresh record [skip ci]"
+          git push
