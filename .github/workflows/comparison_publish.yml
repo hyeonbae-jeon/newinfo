@@ -1,0 +1,49 @@
+name: Auto Comparison Blog Publish
+
+on:
+  schedule:
+    # 트렌딩 이슈(publish.yml)와 겹치지 않게 한국시간 오후 9시(UTC 12시)로 설정
+    - cron: "0 12 * * *"
+  workflow_dispatch:
+    inputs:
+      max_items:
+        description: "이번 실행에서 처리할 최대 건수 (1~10)"
+        required: false
+        default: "3"
+
+permissions:
+  contents: write
+
+jobs:
+  run-comparison-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 저장소 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Python 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 의존성 설치
+        run: pip install -r requirements.txt
+
+      - name: 비교 파이프라인 실행
+        env:
+          MAX_ITEMS_PER_RUN: ${{ github.event.inputs.max_items || '3' }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          BLOGGER_BLOG_ID: ${{ secrets.BLOGGER_BLOG_ID }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+        run: python src/main_comparison.py
+
+      - name: 처리 기록(processed_comparison.json) 커밋
+        run: |
+          git config user.name "gov-policy-bot"
+          git config user.email "actions@github.com"
+          git add data/processed_comparison.json
+          git diff --cached --quiet && echo "변경사항 없음" || git commit -m "chore: update comparison processed list [skip ci]"
+          git push
