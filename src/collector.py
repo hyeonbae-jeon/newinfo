@@ -66,20 +66,29 @@ CONTENT_SELECTORS = [
 
 
 def load_processed():
+    """
+    처리된 글 정보를 {url: {post_id, title, published, updated_at}} 형태로 반환.
+    이전 버전(URL 목록만 저장하던 형식)과도 호환되게 처리.
+    """
     if not os.path.exists(PROCESSED_PATH):
-        return set()
+        return {}
     with open(PROCESSED_PATH, "r", encoding="utf-8") as f:
         try:
             data = json.load(f)
         except json.JSONDecodeError:
-            return set()
-    return set(data.get("processed", []))
+            return {}
+
+    raw = data.get("processed", [])
+    if isinstance(raw, list):
+        # 예전 형식(URL 목록만 저장) -> 새 형식으로 변환 (post_id는 알 수 없어 빈 값)
+        return {url: {"post_id": None} for url in raw}
+    return raw
 
 
-def save_processed(processed_set):
+def save_processed(processed_dict):
     os.makedirs(os.path.dirname(PROCESSED_PATH), exist_ok=True)
     with open(PROCESSED_PATH, "w", encoding="utf-8") as f:
-        json.dump({"processed": sorted(processed_set)}, f, ensure_ascii=False, indent=2)
+        json.dump({"processed": processed_dict}, f, ensure_ascii=False, indent=2)
 
 
 def resolve_final_url(google_link: str) -> str:

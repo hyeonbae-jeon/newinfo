@@ -92,6 +92,43 @@ def publish_post(blog_post: dict, is_draft: bool = True):
     return result
 
 
+def update_post(post_id: str, blog_post: dict, insert_new_images: bool = True):
+    """
+    이미 발행된 글(post_id)의 제목/본문/라벨을 새 내용으로 덮어쓴다.
+    - insert_new_images=True면 이미지도 새로 검색해서 다시 삽입 (기존 이미지는 사라짐)
+    - insert_new_images=False면 blog_post['blog_markdown']을 이미지 없이 그대로 반영
+      (기존 글에 이미 수동으로 넣어둔 이미지를 보존하고 싶을 때 사용)
+    """
+    blog_id = os.environ["BLOGGER_BLOG_ID"]
+    service = get_blogger_service()
+
+    html_content = md_lib.markdown(
+        blog_post.get("blog_markdown", ""), extensions=["tables", "fenced_code"]
+    )
+
+    if insert_new_images:
+        html_content = insert_images(html_content, blog_post)
+
+    body = {
+        "kind": "blogger#post",
+        "id": post_id,
+        "title": blog_post.get("title", "제목 없음"),
+        "content": html_content,
+        "labels": blog_post.get("tags", [])[:10],
+    }
+
+    request = service.posts().update(blogId=blog_id, postId=post_id, body=body)
+    result = request.execute()
+    return result
+
+
+def get_post(post_id: str):
+    """post_id로 현재 게시물 내용을 조회 (수정 전 확인용)."""
+    blog_id = os.environ["BLOGGER_BLOG_ID"]
+    service = get_blogger_service()
+    return service.posts().get(blogId=blog_id, postId=post_id).execute()
+
+
 if __name__ == "__main__":
     sample_post = {
         "title": "테스트 발행 제목",

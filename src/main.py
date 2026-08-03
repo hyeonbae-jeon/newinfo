@@ -8,6 +8,7 @@ Collector -> Writer -> Publisher 순서로 전체 파이프라인을 실행하�
 GitHub Actions에서 스케줄 실행되는 진입점 스크립트.
 """
 
+import datetime
 import os
 import sys
 import traceback
@@ -50,10 +51,17 @@ def main():
                 continue
 
             result = publish_post(blog_post, is_draft=PUBLISH_AS_DRAFT)
-            print(f"  -> 발행 완료: {result.get('url', '(URL 없음, 초안일 수 있음)')}")
+            post_id = result.get("id")
+            print(f"  -> 발행 완료 (post_id={post_id}): {result.get('url', '(URL 없음, 초안일 수 있음)')}")
 
             # 성공한 건만 처리 완료 목록에 추가 (실패하면 다음 실행에서 재시도)
-            processed.add(item["link"])
+            # post_id를 저장해두면 나중에 이 글을 다시 찾아 수정할 수 있다.
+            processed[item["link"]] = {
+                "post_id": post_id,
+                "title": blog_post.get("title", item["title"]),
+                "published": item.get("published", ""),
+                "updated_at": datetime.datetime.utcnow().isoformat(),
+            }
 
         except Exception as e:
             print(f"  -> 오류 발생, 이 건은 건너뜁니다: {e}")
