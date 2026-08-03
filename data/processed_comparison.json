@@ -1,3 +1,23 @@
 {
-  "processed": {}
+  "processed": {
+    "https://www.thevaluenews.co.kr/news/197315": {
+      "post_id": null,
+      "title": "[현장] \"진짜 안 흔들리네\" 전작과 비교 테스트한 갤S26 울트라...직접 써보니 '차이 분명' - 더밸류뉴스",
+      "published": "Tue, 10 Mar 2026 07:00:00 GMT",
+      "updated_at": "2026-08-03T12:19:00.233537",
+      "skipped_reason": "insufficient_comparison_data"
+    },
+    "https://brunch.co.kr/@meppy/8": {
+      "post_id": "8232110773261426262",
+      "title": "갤럭시 버즈2 프로 전작 비교 분석: 디자인부터 성능, 가격 차이까지",
+      "published": "Wed, 22 Apr 2026 07:00:00 GMT",
+      "updated_at": "2026-08-03T12:19:10.533935"
+    },
+    "https://zdnet.co.kr/view/?no=20260303131722": {
+      "post_id": "8709462276482629117",
+      "title": "아이폰17e 출시, 아이폰16e 전작 비교로 살펴본 핵심 차이점",
+      "published": "Tue, 03 Mar 2026 08:00:00 GMT",
+      "updated_at": "2026-08-03T12:19:25.000041"
+    }
+  }
 }
