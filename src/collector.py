@@ -37,6 +37,17 @@ SEARCH_QUERIES = [
     "화제의 인물",
 ]
 
+# 정치 관련 기사는 제외 (제목에 아래 키워드가 하나라도 있으면 건너뜀)
+POLITICAL_KEYWORDS = [
+    "대통령", "국회", "정당", "여야", "국민의힘", "민주당", "조국혁신당",
+    "개혁신당", "진보당", "탄핵", "정치권", "총선", "대선", "국정감사",
+    "청와대", "여의도", "정치인", "의원", "선거", "정부여당", "야당",
+]
+
+
+def _is_political(title: str) -> bool:
+    return any(keyword in title for keyword in POLITICAL_KEYWORDS)
+
 
 def _build_rss_url(query: str) -> str:
     return f"https://news.google.com/rss/search?q={quote(query)}&hl=ko&gl=KR&ceid=KR:ko"
@@ -143,8 +154,10 @@ def collect_new_releases(max_items: int = 5):
     # 여러 검색어의 결과를 하나로 합치되, 구글 링크 기준으로 중복 제거
     all_entries = []
     seen_google_links = set()
+    skipped_political = 0
 
-    # 1) 전체 헤드라인(화제성 이슈) 피드
+    # 1) 전체 헤드라인(화제성 이슈) 피드 -- 구글이 이미 중요도순으로 정렬해서 주므로
+    #    이 피드에서 나온 항목을 우선적으로 처리 (= 조회/관심도가 높은 기사 위주)
     rss_urls = [("전체 헤드라인", TOP_HEADLINES_URL)]
     rss_urls += [(query, _build_rss_url(query)) for query in SEARCH_QUERIES]
 
@@ -160,11 +173,19 @@ def collect_new_releases(max_items: int = 5):
 
         for entry in feed.entries:
             google_link = entry.get("link", "")
+            title = entry.get("title", "")
+
+            if _is_political(title):
+                skipped_political += 1
+                continue
+
             if google_link and google_link not in seen_google_links:
                 seen_google_links.add(google_link)
                 all_entries.append(entry)
 
         time.sleep(1)  # 구글 요청 사이 짧은 딜레이
+
+    print(f"[진단] 정치 키워드로 제외된 항목: {skipped_political}건")
 
     print(f"[진단] 검색 {len(rss_urls)}개 합산, 중복 제거 후 전체 항목 수: {len(all_entries)}")
 
