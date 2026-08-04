@@ -1,0 +1,54 @@
+name: Auto Paper Intro Publish
+
+on:
+  schedule:
+    # 다른 두 파이프라인과 안 겹치게 한국시간 오후 3시(UTC 6시)
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+    inputs:
+      max_items:
+        description: "이번 실행에서 처리할 최대 건수 (1~10)"
+        required: false
+        default: "2"
+      min_applicability_score:
+        description: "최소 적용가능성 점수 (1~5, 5가 가장 엄격)"
+        required: false
+        default: "4"
+
+permissions:
+  contents: write
+
+jobs:
+  run-papers-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 저장소 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Python 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 의존성 설치
+        run: pip install -r requirements.txt
+
+      - name: 논문 소개 파이프라인 실행
+        env:
+          MAX_ITEMS_PER_RUN: ${{ github.event.inputs.max_items || '2' }}
+          MIN_APPLICABILITY_SCORE: ${{ github.event.inputs.min_applicability_score || '4' }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          BLOGGER_BLOG_ID: ${{ secrets.BLOGGER_BLOG_ID }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+        run: python src/main_papers.py
+
+      - name: 처리 기록(processed_papers.json, recent_images.json) 커밋
+        run: |
+          git config user.name "gov-policy-bot"
+          git config user.email "actions@github.com"
+          git add data/processed_papers.json data/recent_images.json
+          git diff --cached --quiet && echo "변경사항 없음" || git commit -m "chore: update papers processed/image history [skip ci]"
+          git push
