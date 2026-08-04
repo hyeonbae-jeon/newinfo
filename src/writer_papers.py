@@ -33,24 +33,51 @@ SYSTEM_PROMPT = """\
   당신이 새로 만들어내지 마십시오.
 - 다만 이미 주어진 데이터를 자연스러운 문장으로 재구성하고, 왜 이 연구가
   의미 있는지 흥미를 끄는 방식으로 설명하는 것은 허용됩니다 (창작이 아니라 재구성).
-- 원문 abstract를 그대로 복사하지 말고 새로운 문장으로 재작성하십시오.
+- 원문 초록(abstract)을 그대로 복사하지 말고 새로운 문장으로 재작성하십시오.
 - AI가 작성했다는 표현은 사용하지 않습니다.
+- 관련 법령 내용은 정확도를 보장할 수 없으므로 절대 언급하지 마십시오
+  (입력 데이터에 관련 법령이 있어도 사용하지 마십시오).
 
-# 작성 규칙
-1. 제목은 논문 주제를 흥미롭게 소개하는 자연스러운 제목으로 작성합니다
-   (논문 제목을 그대로 쓰지 말고, 독자가 클릭하고 싶어지게).
-2. 첫 문단에서 이 논문이 왜 지금 국립공원 관리에 중요한지 흥미를 끌게 시작합니다.
-3. 아래 순서로 Markdown 섹션(H2)을 구성합니다.
-   - 이 논문, 한눈에 보기 (3줄 요약 활용)
-   - 연구는 무엇을 다루었나 (연구목적 + 핵심결과)
-   - 우리 국립공원에 어떻게 적용할 수 있을까 (실무 적용방안)
-   - 적용 가능성 평가 (점수와 그 이유 — "5점 만점에 O점"처럼 명시)
-   - 현장에서 확인해볼 체크리스트 (field_checklist를 리스트로)
-   - 관련 법령 (있는 경우만)
-   - 적용 시 주의할 점 (cautions)
-4. 표 또는 리스트를 적극 활용합니다.
-5. 중요한 내용은 **굵게** 강조합니다.
-6. 관련 법령이나 체크리스트가 데이터에 없으면 해당 섹션은 통째로 생략합니다.
+# 글의 큰 구성: 두 파트로 나눕니다
+이 글은 "① 논문 자체를 소개하는 파트"와 "② 국립공원 실무에 어떻게 쓸지
+다루는 파트"로 명확히 나뉩니다. 두 파트 사이에는 짧은 구분 문단이나
+`---` 구분선을 넣어 독자가 "이제부터는 적용 이야기구나"라고 느끼게 하십시오.
+
+## 파트 1. 이 논문은 무엇인가 (사실 정보 + 요약)
+아래 내용을 먼저, 이 순서로 다룹니다.
+1. **논문 기본 정보**: 제목(원문/한글), 저자, 발행연도, 게재 저널, 원문 링크를
+   표(table) 형식으로 깔끔하게 정리합니다. 나열형 문장으로 늘어놓지 마십시오.
+2. **3줄 핵심 요약**: summary_3lines를 인용구(blockquote, >)나 강조 박스
+   느낌으로 짧고 임팩트 있게 보여줍니다.
+3. **연구 목적**: 이 연구가 어떤 질문/문제에서 출발했는지 1~2문단으로 서술합니다.
+4. **연구 결과(핵심 발견)**: key_findings를 단순 나열하지 말고, 관련된 발견끼리
+   묶어 소제목(H3)이나 리스트로 그룹핑해서 흐름 있게 전달합니다.
+5. **논문 초록**: 초록 데이터가 있으면, 그대로 복사하지 말고 이해하기
+   쉬운 한국어 문장으로 재구성해 보여줍니다. 초록 데이터가 없으면 이 항목은
+   생략합니다(있는 척하지 마십시오).
+
+## 파트 2. 우리 국립공원에는 어떻게 적용할까 (실무 활용)
+1. **적용 가능성 평가**: korea_np_applicability_score를 "5점 만점에 O점"처럼
+   명시하고, 그 이유(korea_np_applicability_reason)를 함께 설명합니다.
+2. **실무 적용 방안**: practical_applications를 실무자가 바로 이해할 수 있게
+   상황별/단계별로 묶어서 정리합니다 (예: "탐방로 관리 측면", "모니터링 측면" 등
+   데이터 내용에 맞게 자연스럽게 소분류).
+3. **현장에서 확인해볼 체크리스트**: field_checklist가 있으면 체크리스트
+   형식(- [ ] 항목)으로 정리합니다. 없으면 생략합니다.
+4. **적용 시 주의할 점**: cautions를 정리합니다. 없으면 생략합니다.
+5. **후속 연구로 필요한 내용**: 데이터에 후속 연구 관련 내용이 있으면
+   정리합니다. 없으면 이 섹션 전체를 생략합니다.
+
+# 가독성 원칙 (매우 중요)
+- 텍스트를 그냥 쭉 나열하지 마십시오. 각 섹션은 "① 한두 문장의 도입 →
+  ② 표/리스트/체크박스 등 구조화된 형태로 세부 내용"의 흐름을 따르십시오.
+- 비슷한 성격의 항목은 소제목(H3)으로 묶어서 긴 리스트를 쪼개십시오
+  (예: key_findings가 5개 이상이면 2~3개 소주제로 그룹핑).
+- 표는 정보가 서로 대응되는 항목(기본정보, 비교 등)에, 리스트는 나열형 정보에,
+  체크박스는 실행 항목에 사용하는 식으로 형식을 목적에 맞게 구분해서 쓰십시오.
+- 중요한 수치나 결론은 **굵게** 강조합니다.
+- 데이터에 없는 섹션(초록, 체크리스트, 주의사항, 후속연구 등)은 억지로 채우지
+  말고 통째로 생략하십시오. 관련 법령 섹션은 어떤 경우에도 만들지 마십시오.
 
 # 이미지 프롬프트 작성 규칙
 thumbnail_prompt, image_prompts는 스톡사진 검색에 쓰입니다.
@@ -88,6 +115,11 @@ def build_user_message(paper: dict) -> str:
     analysis = paper.get("ai_analysis", {})
     link = paper.get("oa_url") or paper.get("openalex_url") or paper.get("doi", "")
 
+    # bukhansan-site의 enricher.py가 생성하는 실제 필드명 기준
+    # (한글 번역 초록은 ai_analysis 안의 abstract_ko, 원문 초록은 paper 최상위 abstract)
+    abstract = analysis.get("abstract_ko") or paper.get("abstract", "")
+    future_research = analysis.get("recommended_followup_research", [])
+
     return f"""# 입력 데이터 (papers.json의 분석 결과)
 - 논문 제목(원문): {paper.get('title', '')}
 - 논문 제목(한글): {analysis.get('title_ko', '')}
@@ -95,6 +127,7 @@ def build_user_message(paper: dict) -> str:
 - 발행연도: {paper.get('year', '')}
 - 저널: {paper.get('journal', '')}
 - 원문 링크: {link}
+- 초록(한글 번역 우선, 없으면 영문 원문): {abstract}
 
 - 3줄 요약: {json.dumps(analysis.get('summary_3lines', []), ensure_ascii=False)}
 - 연구 목적: {analysis.get('research_purpose', '')}
@@ -103,11 +136,14 @@ def build_user_message(paper: dict) -> str:
 - 한국 국립공원 적용가능성 점수(5점 만점): {analysis.get('korea_np_applicability_score', '')}
 - 적용가능성 평가 이유: {analysis.get('korea_np_applicability_reason', '')}
 - 관련 업무 분야: {json.dumps(analysis.get('related_work_areas', []), ensure_ascii=False)}
-- 관련 법령: {json.dumps(analysis.get('related_laws', []), ensure_ascii=False)}
 - 현장점검 체크리스트: {json.dumps(analysis.get('field_checklist', []), ensure_ascii=False)}
 - 실무 활용도 점수(5점 만점): {analysis.get('practical_utility_score', '')}
 - 적용 시 주의사항: {json.dumps(analysis.get('cautions', []), ensure_ascii=False)}
+- 후속 연구로 필요한 내용(없을 수 있음): {json.dumps(future_research, ensure_ascii=False)}
 - 태그: {json.dumps(analysis.get('tags', []), ensure_ascii=False)}
+
+※ 관련 법령 데이터는 정확도를 보장할 수 없어 의도적으로 전달하지 않았습니다.
+글에서도 관련 법령 내용은 절대 언급하지 마십시오.
 
 # 출처 표기용 정보
 title_placeholder = {analysis.get('title_ko', '') or paper.get('title', '')}
