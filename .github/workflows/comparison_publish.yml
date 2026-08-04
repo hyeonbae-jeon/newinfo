@@ -40,10 +40,10 @@ jobs:
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
         run: python src/main_comparison.py
 
-      - name: 처리 기록(processed_comparison.json) 커밋
+      - name: 처리 기록(processed_comparison.json, recent_images.json) 커밋
         run: |
           git config user.name "gov-policy-bot"
           git config user.email "actions@github.com"
-          git add data/processed_comparison.json
-          git diff --cached --quiet && echo "변경사항 없음" || git commit -m "chore: update comparison processed list [skip ci]"
+          git add data/processed_comparison.json data/recent_images.json
+          git diff --cached --quiet && echo "변경사항 없음" || git commit -m "chore: update comparison processed/image history [skip ci]"
           git push

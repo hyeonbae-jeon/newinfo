@@ -41,10 +41,10 @@ jobs:
           BLOGGER_BLOG_ID: ${{ secrets.BLOGGER_BLOG_ID }}
         run: python src/main.py
 
-      - name: 처리 기록(processed.json) 커밋
+      - name: 처리 기록(processed.json, recent_images.json) 커밋
         run: |
           git config user.name "gov-policy-bot"
           git config user.email "actions@github.com"
-          git add data/processed.json
-          git diff --cached --quiet && echo "변경사항 없음" || git commit -m "chore: update processed list [skip ci]"
+          git add data/processed.json data/recent_images.json
+          git diff --cached --quiet && echo "변경사항 없음" || git commit -m "chore: update processed/image history [skip ci]"
           git push
