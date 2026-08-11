@@ -1,0 +1,64 @@
+name: Travel Course Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      destination:
+        description: "여행지 (한글, 예: 오사카)"
+        required: true
+      destination_en:
+        description: "여행지 영문명 (예: Osaka Japan) — Wikipedia 검색용"
+        required: false
+        default: ""
+      duration:
+        description: "일정 (예: 1박2일, 2박3일, 3박4일)"
+        required: true
+      theme:
+        description: "여행 테마 (예: 맛집, 쇼핑 / 자연, 힐링 / 역사, 문화)"
+        required: false
+        default: "관광, 맛집"
+      budget:
+        description: "예산 (저렴하게 / 중간 / 프리미엄)"
+        required: false
+        default: "중간"
+
+permissions:
+  contents: write
+
+jobs:
+  publish-travel-course:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 저장소 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Python 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 의존성 설치
+        run: pip install -r requirements.txt
+
+      - name: 여행 코스 파이프라인 실행
+        env:
+          DESTINATION: ${{ github.event.inputs.destination }}
+          DESTINATION_EN: ${{ github.event.inputs.destination_en }}
+          DURATION: ${{ github.event.inputs.duration }}
+          THEME: ${{ github.event.inputs.theme }}
+          BUDGET: ${{ github.event.inputs.budget }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          BLOGGER_BLOG_ID: ${{ secrets.BLOGGER_BLOG_ID }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+        run: python src/main_travel.py
+
+      - name: 처리 기록 커밋
+        run: |
+          git config user.name "gov-policy-bot"
+          git config user.email "actions@github.com"
+          git add data/processed_travel.json data/recent_images.json
+          git diff --cached --quiet && echo "변경사항 없음" || git commit -m "chore: update travel processed/image history [skip ci]"
+          git push
